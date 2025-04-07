@@ -1,67 +1,129 @@
 <!DOCTYPE html>
 <html>
-<head>
-  <meta charset="UTF-8">
-  <title>Shaka Player - ClearKey + Custom Headers</title>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.6.0/shaka-player.compiled.js"></script>
-  <style>
-    html, body {
-      margin: 0;
-      padding: 0;
-      background: #000;
-      height: 100%;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-    }
-    video {
-      width: 90%;
-      max-width: 960px;
-      height: auto;
-    }
-  </style>
-</head>
-<body>
-
-<video id="video" autoplay muted controls></video>
-
-<script>
-  async function initPlayer() {
-    const manifestUri = "https://sshindidash-i.akamaihd.net/dash/live/2002466-b/sshindiwv/master.mpd";
-
-    const keyId = 'fe7718fbb3fb4ba78c07cc0f578744e6';
-    const key = '624e24b1843b459fab0a949609416f0d';
-
-    const player = new shaka.Player(document.getElementById('video'));
-
-    // Register request filter to add custom headers
-    player.getNetworkingEngine().registerRequestFilter((type, request) => {
-      if (type === shaka.net.NetworkingEngine.RequestType.MANIFEST ||
-          type === shaka.net.NetworkingEngine.RequestType.SEGMENT) {
-        request.headers['Cookie'] = 'hdntl=exp=1744123873~acl=*sshindi*~id=55c7acd55768bf4bad7ae7eb20a2b11f~data=hdntl~hmac=b51d4d1bc3033f35190013bcb5c4323643191b513134a7a70c60eb88c26c1e94';
-        request.headers['User-Agent'] = 'Hotstar;in.startv.hotstar/25.02.24.8.11169 (Android/15)';
+  <head>
+     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TG-@cric_stream</title>
+     <link rel="shortcut icon" type="image/x-icon" href="Cric stream Favicon.jpg">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.12.5/shaka-player.ui.min.js"></script>
+    <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.12.5/controls.min.css">
+    <style>
+      #live-label {
+        position: absolute;
+        top: 5px;
+        left: 5px;
+        font-size: 10px;
+        color: white;
+        background-color: rgba(0, 0, 0, 0.4);
+        padding: 4px 8px;
+        border-radius: 5px;
+        display: none;
+        z-index: 10;
       }
-    });
 
-    // DRM configuration
-    player.configure({
-      drm: {
-        clearKeys: {
-          [keyId]: key
+      #live-label a {
+        color: white;
+        text-decoration: none;
+        font-weight: bold;
+      }
+
+      @media (min-width: 768px) {
+        #live-label {
+          font-size: 8px;
+          padding: 5px 10px;
         }
       }
-    });
 
-    try {
-      await player.load(manifestUri);
-      console.log("Stream loaded!");
-    } catch (e) {
-      console.error("Error loading manifest:", e);
-    }
-  }
+      @media (max-width: 767px) {
+        #live-label {
+          font-size: 5px;
+          padding: 2px 4px;
+          top: 3px;
+          left: 3px;
+        }
+      }
 
-  document.addEventListener('DOMContentLoaded', initPlayer);
-</script>
+      video {
+        width: 100%;
+        height: 100%;
+        background-color: black;
+      }
+    </style>
+  </head>
+  <body>
+    <div data-shaka-player-container style="max-width:100%">
+      <video autoplay data-shaka-player id="video"></video>
+      <div id="live-label">
+        <center><a href="https://t.me/+ESR7kTRkAHI1NTI1">CRIC <br> STREAM</a></center>
+      </div>
+    </div>
 
-</body>
+    <script>
+      const manifestUri = 'https://sshindidash-i.akamaihd.net/dash/live/2002466-b/sshindiwv/master.mpd';
+      const keyId = 'fe7718fbb3fb4ba78c07cc0f578744e6';
+      const key = '624e24b1843b459fab0a949609416f0d';
+      const cookieHeader = 'hdntl=exp=1744123873~acl=*sshindi*~id=55c7acd55768bf4bad7ae7eb20a2b11f~data=hdntl~hmac=b51d4d1bc3033f35190013bcb5c4323643191b513134a7a70c60eb88c26c1e94';
+      const userAgentHeader = 'Hotstar;in.startv.hotstar/25.02.24.8.11169 (Android/15)';
+
+      async function init() {
+        const video = document.getElementById('video');
+        const ui = video['ui'];
+        const controls = ui.getControls();
+        const player = controls.getPlayer();
+
+        // Add custom headers for requests
+        player.getNetworkingEngine().registerRequestFilter((type, request) => {
+          if (type === shaka.net.NetworkingEngine.RequestType.MANIFEST ||
+              type === shaka.net.NetworkingEngine.RequestType.SEGMENT) {
+            request.headers['Cookie'] = cookieHeader;
+            request.headers['User-Agent'] = userAgentHeader;
+          }
+        });
+
+        // Configure Shaka Player UI
+        ui.configure({
+          controlPanelElements: ['play_pause', 'spacer', 'mute', 'quality','language','picture_in_picture', 'fullscreen']
+        });
+
+        player.configure({
+          drm: {
+            clearKeys: {
+              [keyId]: key
+            }
+          }
+        });
+
+        player.addEventListener('error', onPlayerErrorEvent);
+        controls.addEventListener('error', onUIErrorEvent);
+
+        const liveLabel = document.getElementById('live-label');
+        liveLabel.style.display = 'block';
+
+        try {
+          await player.load(manifestUri);
+          console.log('The video has now been loaded!');
+        } catch (error) {
+          onPlayerError(error);
+        }
+      }
+
+      function onPlayerErrorEvent(errorEvent) {
+        onPlayerError(errorEvent.detail);
+      }
+
+      function onPlayerError(error) {
+        console.error('Error code', error.code, 'object', error);
+      }
+
+      function onUIErrorEvent(errorEvent) {
+        onPlayerError(errorEvent.detail);
+      }
+
+      function initFailed(errorEvent) {
+        console.error('Unable to load the UI library!');
+      }
+
+      document.addEventListener('shaka-ui-loaded', init);
+      document.addEventListener('shaka-ui-load-failed', initFailed);
+    </script>
+  </body>
 </html>
