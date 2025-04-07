@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Abilove Player</title>
+  <script src="//content.jwplatform.com/libraries/SAHhwvZq.js"></script>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: Arial, sans-serif;
+    }
+
+    #jwplayerDiv {
+      width: 100%;
+      height: 100vh;
+    }
+  </style>
+</head>
+<body>
+  <div id="jwplayerDiv"></div>
+
+  <script>
+    function getParams() {
+      const url = new URL(window.location.href);
+      const [mpdUrlPart, drmPart] = url.search.slice(1).split('|');
+      const mpdUrl = decodeURIComponent(mpdUrlPart);
+      const searchParams = new URLSearchParams(drmPart);
+
+      const drmScheme = searchParams.get("drmScheme");
+      const drmLicense = searchParams.get("drmLicense"); // Format: keyId:key
+      const cookie = searchParams.get("Cookie");
+      const userAgent = searchParams.get("User-agent");
+
+      let keyId = "", key = "";
+      if (drmLicense) {
+        [keyId, key] = drmLicense.split(':');
+      }
+
+      const headers = {};
+      if (cookie) headers["Cookie"] = cookie;
+      if (userAgent) headers["User-Agent"] = userAgent;
+
+      return {
+        file: mpdUrl,
+        drm: {
+          scheme: drmScheme,
+          keyId,
+          key,
+        },
+        headers
+      };
+    }
+
+    const { file, drm, headers } = getParams();
+
+    jwplayer("jwplayerDiv").setup({
+      file: file,
+      type: "dash",
+      drm: {
+        [drm.scheme]: {
+          keyId: drm.keyId,
+          key: drm.key,
+        },
+      },
+      dash: {
+        customHeaders: headers
+      },
+      autostart: true,
+      mute: false,
+      image: "https://via.placeholder.com/1280x720?text=Loading+Stream"
+    });
+  </script>
+</body>
+</html>
+
