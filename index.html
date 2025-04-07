@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Abilove Player</title>
+  <title>Abilove DRM Player</title>
   <script src="//content.jwplatform.com/libraries/SAHhwvZq.js"></script>
   <style>
     body {
@@ -24,23 +24,21 @@
   <script>
     function getParams() {
       const url = new URL(window.location.href);
-      const [mpdUrlPart, drmPart] = url.search.slice(1).split('|');
-      const mpdUrl = decodeURIComponent(mpdUrlPart);
-      const searchParams = new URLSearchParams(drmPart);
+      const fullQuery = decodeURIComponent(url.search.slice(1));
+      const [mpdUrlPart, drmPartRaw] = fullQuery.split('|');
 
-      const drmScheme = searchParams.get("drmScheme");
-      const drmLicense = searchParams.get("drmLicense"); // Format: keyId:key
-      const cookie = searchParams.get("Cookie");
-      const userAgent = searchParams.get("User-agent");
+      const mpdUrl = mpdUrlPart.trim();
+      const drmPart = new URLSearchParams(drmPartRaw);
+
+      const drmScheme = drmPart.get("drmScheme");
+      const drmLicense = drmPart.get("drmLicense"); // Format: keyId:key
+      const cookie = drmPart.get("Cookie");
+      const userAgent = drmPart.get("User-agent");
 
       let keyId = "", key = "";
       if (drmLicense) {
         [keyId, key] = drmLicense.split(':');
       }
-
-      const headers = {};
-      if (cookie) headers["Cookie"] = cookie;
-      if (userAgent) headers["User-Agent"] = userAgent;
 
       return {
         file: mpdUrl,
@@ -49,11 +47,14 @@
           keyId,
           key,
         },
-        headers
+        cookie,
+        userAgent
       };
     }
 
-    const { file, drm, headers } = getParams();
+    const { file, drm } = getParams();
+
+    console.log("Trying to play:", file);
 
     jwplayer("jwplayerDiv").setup({
       file: file,
@@ -64,14 +65,10 @@
           key: drm.key,
         },
       },
-      dash: {
-        customHeaders: headers
-      },
       autostart: true,
       mute: false,
-      image: "https://via.placeholder.com/1280x720?text=Loading+Stream"
+      image: "https://via.placeholder.com/1280x720?text=Stream+Loading"
     });
   </script>
 </body>
 </html>
-
